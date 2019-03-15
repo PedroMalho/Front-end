@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Monster Slayer</title>
+    <script src="https://npmcdn.com/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="foundation.min.css">
+    <link rel="stylesheet" href="app.css">
+</head>
+
+<body>
+    <div id="app">
+        <section class="row">
+            <div class="small-6 columns">
+                <h1 class="text-center">YOU</h1>
+                <div class="healthbar">
+                    <div class="healthbar text-center" 
+                    style="background-color: green; margin: 0; color: white;"
+                    :style="{width: playerHealth + '%'}">
+                        {{ playerHealth }}
+                    </div>
+                </div>
+            </div>
+            <div class="small-6 columns">
+                <h1 class="text-center">MONSTER</h1>
+                <div class="healthbar">
+                    <div class="healthbar text-center" style="background-color: green; margin: 0; color: white;"
+                    :style="{width: monsterHealth + '%'}">
+                        {{ monsterHealth }}
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="row controls" v-if="!gameIsRunning">
+            <div class="small-12 columns">
+                <button id="start-game" @click="gameIsRunning = true">START NEW GAME</button>
+            </div>
+        </section>
+        <section class="row controls">
+            <div class="small-12 columns">
+                <button id="attack" @click="attack">ATTACK</button>
+                <button id="special-attack" @click="specialAttack">SPECIAL ATTACK</button>
+                <button id="heal" @click="heal">HEAL</button>
+                <button id="give-up" @click="giveUp">GIVE UP</button>
+            </div>
+        </section>
+        <section class="row log" v-if="turns.length > 0">
+            <div class="small-12 columns">
+                <ul>
+                    <li v-for="turn in turns"
+                        :class="{'player-turn': turn.isPlayer, 'monster-turn': !turn.isPlayer}">
+                        {{ turn.text }}
+                    </li>
+                </ul>
+            </div>
+        </section>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                playerHealth: 100,
+                monsterHealth: 100,
+                gameIsRunning: false,
+                turns:[]
+            },
+            methods: {
+                calculatePlayerDamage: function(min, max) {
+                    return Math.max(Math.floor(Math.random() * max) + 1, min);
+                },
+                calculateMonsterDamage: function(min, max) {
+                    return Math.max(Math.floor(Math.random() * max) + 1, min);
+                },
+                checkWin: function() {
+                    if (this.monsterHealth <= 0) {
+                        alert('You won!');
+                        this.gameIsRunning = false;
+                        return;
+                    } else if (this.playerHealth <= 0) {
+                        alert('You lost!');
+                        this.gameIsRunning = false;
+                        return;
+                    }
+                },
+                checkMaxHealth: function() {
+                    if (this.playerHealth > 100) {
+                        this.playerHealth = 100;
+                        return;
+                    }
+                },
+                startGame: function() {
+                    this.gameIsRunning = true;
+                    this.playerHealth = 100;
+                    this.monsterHealth = 100;
+                },
+                attack: function() {
+                    var damage = this.calculatePlayerDamage(3, 10);
+                    this.monsterHealth -= damage;
+                    this.turns.unshift({
+                        isPlayer: true,
+                        text: 'Player hits Monster for ' + damage
+                    });
+                    var damage = this.calculateMonsterDamage(3, 10);
+                    this.playerHealth -= damage;
+                    this.turns.unshift({
+                        isPlayer: false,
+                        text: 'Monster hits Player for ' + damage
+                    });
+                    if (this.checkWin()) {
+                        return;
+                    }
+                },
+                specialAttack: function(){
+                    var damage = this.calculateDamage(10, 20);
+                    this.monsterHealth -= damage;
+                    this.turns.unshift({
+                        isPlayer: true,
+                        text: 'Player hits Monster for ' + damage + ' with a special attack!'
+                    });
+                    var damage = this.calculateMonsterDamage(3, 10);
+                    this.playerHealth -= damage;
+                    this.turns.unshift({
+                        isPlayer: false,
+                        text: 'Monster hits Player for ' + damage
+                    });
+                    if (this.checkWin()) {
+                        return;
+                    }
+
+                },
+                heal: function() {
+                    var healing = 25;
+                    this.playerHealth += healing;
+                    this.turns.unshift({
+                        isPlayer: true,
+                        text: 'Player heals for ' + healing
+                    });
+                    if (this.checkMaxHealth()){
+                        return;
+                    };
+                    var damage = this.calculateMonsterDamage(3, 10);
+                    this.playerHealth -= damage;
+                    this.turns.unshift({
+                        isPlayer: false,
+                        text: 'Monster hits Player for ' + damage
+                    });
+                    if (this.checkWin()) {
+                        return;
+                    }
+                },
+                giveUp: function() {
+                    alert('You gave up on the game, like your parents gave up on you.');
+                    this.gameIsRunning = false;
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
