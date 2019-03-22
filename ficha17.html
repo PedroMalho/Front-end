@@ -14,9 +14,7 @@
             <div class="small-6 columns">
                 <h1 class="text-center">YOU</h1>
                 <div class="healthbar">
-                    <div class="healthbar text-center" 
-                    style="background-color: green; margin: 0; color: white;"
-                    :style="{width: playerHealth + '%'}">
+                    <div class="healthbar text-center" style="background-color: green; margin: 0; color: white;" :style="{width: playerHealth + '%'}">
                         {{ playerHealth }}
                     </div>
                 </div>
@@ -24,8 +22,7 @@
             <div class="small-6 columns">
                 <h1 class="text-center">MONSTER</h1>
                 <div class="healthbar">
-                    <div class="healthbar text-center" style="background-color: green; margin: 0; color: white;"
-                    :style="{width: monsterHealth + '%'}">
+                    <div class="healthbar text-center" style="background-color: green; margin: 0; color: white;" :style="{width: monsterHealth + '%'}">
                         {{ monsterHealth }}
                     </div>
                 </div>
@@ -47,10 +44,14 @@
         <section class="row log" v-if="turns.length > 0">
             <div class="small-12 columns">
                 <ul>
-                    <li v-for="turn in turns"
-                        :class="{'player-turn': turn.isPlayer, 'monster-turn': !turn.isPlayer}">
-                        {{ turn.text }}
-                    </li>
+                    <transition-group name="fade" appear>
+                        <li v-for="(turn,index) in turns"
+                            :class="{'player-turn': turn.isPlayer,
+                                     'monster-turn': !turn.isPlayer}"
+                            :key="index">
+                            {{ turn.text }}
+                        </li>
+                    </transition-group>
                 </ul>
             </div>
         </section>
@@ -63,16 +64,16 @@
                 playerHealth: 100,
                 monsterHealth: 100,
                 gameIsRunning: false,
-                turns:[]
+                turns: []
             },
             methods: {
-                calculatePlayerDamage: function(min, max) {
+                calculatePlayerDamage: function (min, max) {
                     return Math.max(Math.floor(Math.random() * max) + 1, min);
                 },
-                calculateMonsterDamage: function(min, max) {
+                calculateMonsterDamage: function (min, max) {
                     return Math.max(Math.floor(Math.random() * max) + 1, min);
                 },
-                checkWin: function() {
+                checkWin: function () {
                     if (this.monsterHealth <= 0) {
                         alert('You won!');
                         this.gameIsRunning = false;
@@ -83,18 +84,18 @@
                         return;
                     }
                 },
-                checkMaxHealth: function() {
+                checkMaxHealth: function () {
                     if (this.playerHealth > 100) {
                         this.playerHealth = 100;
                         return;
                     }
                 },
-                startGame: function() {
+                startGame: function () {
                     this.gameIsRunning = true;
                     this.playerHealth = 100;
                     this.monsterHealth = 100;
                 },
-                attack: function() {
+                attack: function () {
                     var damage = this.calculatePlayerDamage(3, 10);
                     this.monsterHealth -= damage;
                     this.turns.unshift({
@@ -111,8 +112,8 @@
                         return;
                     }
                 },
-                specialAttack: function(){
-                    var damage = this.calculateDamage(10, 20);
+                specialAttack: function () {
+                    var damage = this.calculatePlayerDamage(10, 20);
                     this.monsterHealth -= damage;
                     this.turns.unshift({
                         isPlayer: true,
@@ -129,14 +130,14 @@
                     }
 
                 },
-                heal: function() {
+                heal: function () {
                     var healing = 25;
                     this.playerHealth += healing;
                     this.turns.unshift({
                         isPlayer: true,
                         text: 'Player heals for ' + healing
                     });
-                    if (this.checkMaxHealth()){
+                    if (this.checkMaxHealth()) {
                         return;
                     };
                     var damage = this.calculateMonsterDamage(3, 10);
@@ -149,13 +150,22 @@
                         return;
                     }
                 },
-                giveUp: function() {
+                giveUp: function () {
                     alert('You gave up on the game, like your parents gave up on you.');
                     this.gameIsRunning = false;
                 }
             }
         });
     </script>
+    <style>
+        .fade-enter-active {
+            transition: opacity 0.5s;
+        }
+
+        .fade-enter {
+            opacity: 0;
+        }
+    </style>
 </body>
 
 </html>
